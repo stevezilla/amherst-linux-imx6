@@ -1,1 +1,0 @@
-# amherst-linux-imx6
