@@ -570,9 +570,9 @@
 	pinctrl-0 = <&pinctrl_usdhc2_1>;
 	cd-gpios = <&gpio4 6 0>;
 	wp-gpios = <&gpio2 1 0>;
-	no-1-8-v;
+	/*no-1-8-v;*/
 	keep-power-in-suspend;
-	enable-sdio-wakeup;
+	/*enable-sdio-wakeup;*/
 	status = "okay";
 };
 
