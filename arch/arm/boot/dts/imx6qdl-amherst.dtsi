@@ -463,8 +463,10 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc2_1>;
 	gpios = <&gpio7 13 1>;
-	cd-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>;
-	wp-gpios = <&gpio2 6 GPIO_ACTIVE_LOW>;
+	cd-type = "gpio"
+	wp-type = "none"
+	cd-gpios = <&gpio1 4 GPIO_ACTIVE_LOW>;
+	wp-gpios = <&gpio1 2 GPIO_ACTIVE_LOW>;
 	cd-inverted;
 	no-1-8-v;
 	bus-width = <4>;
