@@ -570,12 +570,13 @@
 &usdhc2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc2_1>;
-	cd-gpios = <&gpio4 6 0>;
-	wp-gpios = <&gpio2 1 0>;
+	/*cd-gpios = <&gpio4 6 0>;
+	wp-gpios = <&gpio2 1 0>;*/
 	no-1-8-v;
 	/*cd_inverted;*/
 	cd-inverted;
 	/*fsl,cd-controller;
+	fsl,wp-cd-controller;
 	fsl,wp-controller;
 	vmmc-supply = <&reg_3p3v>;*/
 	keep-power-in-suspend;
