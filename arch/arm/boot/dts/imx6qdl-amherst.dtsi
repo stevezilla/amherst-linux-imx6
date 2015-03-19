@@ -1,4 +1,4 @@
-d*
+/*
  * Copyright 2012 Freescale Semiconductor, Inc.
  * Copyright 2011 Linaro Ltd.
  *
@@ -465,6 +465,7 @@ d*
 	gpios = <&gpio7 13 1>;
 	cd-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>;
 	wp-gpios = <&gpio2 6 GPIO_ACTIVE_LOW>;
+	cd-inverted;
 	no-1-8-v;
 	bus-width = <4>;
 	keep-power-in-suspend;
