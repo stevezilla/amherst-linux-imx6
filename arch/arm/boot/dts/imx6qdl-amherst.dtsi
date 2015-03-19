@@ -380,14 +380,16 @@
 		compatible = "fsl,imx6-hdmi-i2c";
 		reg = <0x50>;
 	};
-
+	
+	/*
 	max11801@48 {
 		compatible = "maxim,max11801";
 		reg = <0x48>;
 		interrupt-parent = <&gpio3>;
 		interrupts = <26 2>;
-		work-mode = <1>;/*DCM mode*/
+		work-mode = <1>;
 	};
+	*/
 
 	ov5640_mipi: ov5640_mipi@3c { /* i2c2 driver */
 		compatible = "ovti,ov5640_mipi";
