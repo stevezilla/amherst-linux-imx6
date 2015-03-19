@@ -463,8 +463,8 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc2_1>;
 	gpios = <&gpio7 13 1>;
-	cd-type = "gpio"
-	wp-type = "none"
+	cd-type = "gpio";
+	wp-type = "none";
 	cd-gpios = <&gpio1 4 GPIO_ACTIVE_LOW>;
 	wp-gpios = <&gpio1 2 GPIO_ACTIVE_LOW>;
 	cd-inverted;
