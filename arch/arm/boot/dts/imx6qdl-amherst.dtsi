@@ -255,6 +255,7 @@
 	pu-supply = <&pu_dummy>; /* use pu_dummy if VDDSOC share with VDDPU */
 };
 
+/*
 &ecspi1 {
 	fsl,spi-num-chipselects = <1>;
 	cs-gpios = <&gpio4 9 0>;
@@ -270,6 +271,7 @@
 		reg = <0>;
 	};
 };
+*/
 
 &fec {
 	pinctrl-names = "default";
@@ -314,6 +316,7 @@
 	status = "okay";
 };
 
+/*
 &i2c1 {
 	clock-frequency = <100000>;
 	pinctrl-names = "default";
@@ -369,7 +372,9 @@
 		vddio-supply = <&reg_sensor>;
 	};
 };
+*/
 
+/*
 &i2c2 {
 	clock-frequency = <100000>;
 	pinctrl-names = "default";
@@ -381,7 +386,6 @@
 		reg = <0x50>;
 	};
 	
-	/*
 	max11801@48 {
 		compatible = "maxim,max11801";
 		reg = <0x48>;
@@ -389,7 +393,6 @@
 		interrupts = <26 2>;
 		work-mode = <1>;
 	};
-	*/
 
 	ov5640_mipi: ov5640_mipi@3c { /* i2c2 driver */
 		compatible = "ovti,ov5640_mipi";
@@ -460,6 +463,7 @@
 		interrupts = <9 2>;
 	};
 };
+*/
 
 &iomuxc {
 	pinctrl-names = "default";
@@ -570,6 +574,8 @@
 &usdhc2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc2_1>;
+	/*gpios = <&gpio7 13 GPIO_ACTIVE_HIGH>;*/
+	gpios = <&gpio7 13 1>;
 	/*cd-gpios = <&gpio4 6 0>;
 	wp-gpios = <&gpio2 1 0>;*/
 	no-1-8-v;
@@ -584,6 +590,7 @@
 	status = "okay";
 };
 
+/*
 &usdhc3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc3_1>;
@@ -606,6 +613,7 @@
 	keep-power-in-suspend;
         status = "okay";
 };
+*/
 
 &vpu {
 	pu-supply = <&pu_dummy>; /* ldo-bypass:use pu_dummy if VDDSOC share with VDDPU */
