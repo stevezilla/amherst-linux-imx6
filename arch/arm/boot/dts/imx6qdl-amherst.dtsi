@@ -466,7 +466,6 @@ d*
 	cd-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>;
 	wp-gpios = <&gpio2 6 GPIO_ACTIVE_LOW>;
 	no-1-8-v;
-	cd-inverted;
 	bus-width = <4>;
 	keep-power-in-suspend;
 	status = "okay";
