@@ -393,8 +393,9 @@
 	wp-type = "none";
 	cd-gpios = <&gpio1 4 0>;
 	wp-gpios = <&gpio1 2 0>;
-	/*cd-inverted;*/
+	cd-inverted;
 	no-1-8-v;
+	non-removeable;
 	bus-width = <4>;
 	keep-power-in-suspend;
 	status = "okay";
