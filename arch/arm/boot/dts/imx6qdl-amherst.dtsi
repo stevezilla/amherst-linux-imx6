@@ -379,7 +379,7 @@
 &usdhc2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc2_1>;
-	gpios = <&gpio7 13 GPIO_ACTIVE_HIGH>;
+	power-gpio = <&gpio7 13 0>;
 	cd-gpios = <&gpio1 4 0>;
 	wp-gpios = <&gpio1 2 0>;
 	cd-inverted;
