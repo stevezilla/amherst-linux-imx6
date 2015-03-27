@@ -6,12 +6,6 @@
  * published by the Free Software Foundation.
  */
 
-&battery {
-	offset-charger = <1485>;
-	offset-discharger = <1464>;
-	offset-usb-charger = <1285>;
-};
-
 &i2c3 {
 	max17135@48 {
 		compatible = "maxim,max17135";
