@@ -186,7 +186,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_enet_1>;
 	phy-mode = "rmii";
-	phy-reset-gpios = <&gpio3 1 0>;
+	phy-reset-gpios = <&gpio1 3 0>;
 	status = "okay";
 };
 
