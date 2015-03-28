@@ -188,6 +188,11 @@
 	phy-mode = "rmii";
 	phy-reset-gpios = <&gpio1 3 0>;
 	status = "okay";
+	phy-int {
+		reg = <0x6>;
+		interrupt-parent = <&gpio4>;
+		interrupts = <10 IRQ_TYPE_LEVEL_LOW>;
+	};
 };
 
 &gpc {

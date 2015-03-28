@@ -822,7 +822,7 @@
 				reg = <0x02188000 0x4000>;
 				interrupts = <0 118 0x04 0 119 0x04>;
 				clocks = <&clks 117>, <&clks 117>, <&clks 190>;
-				clock-names = "ipg", "ahb", "ptp";
+				clock-names = "ipg", "ahb", "enet_ref";
 				status = "disabled";
 			};
 
@@ -1119,7 +1119,7 @@
 				MX6QDL_PAD_ENET_RX_ER__ENET_RX_ER     0x80000000
 				MX6QDL_PAD_GPIO_3__GPIO1_IO03         0x80000000
 				MX6QDL_PAD_KEY_COL2__GPIO4_IO10       0x80000000
-				MX6QDL_PAD_GPIO_16__ENET_REF_CLK      0x80000000
+				MX6QDL_PAD_GPIO_16__ENET_REF_CLK      0x4001b0a8
 			>;
 		};
 
