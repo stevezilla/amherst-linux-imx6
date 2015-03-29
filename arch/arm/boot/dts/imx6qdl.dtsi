@@ -817,7 +817,7 @@
 				clocks = <&clks 162>;
 			};
 
-			enet: ethernet@02188000 {
+			fec: ethernet@02188000 {
                                 compatible = "fsl,imx6sl-fec", "fsl,imx25-fec";
                                 reg = <0x02188000 0x4000>;
                                 interrupts = <0 114 0x04>;
@@ -1107,8 +1107,8 @@
 		};
 	};
 
-	enet {
-		pinctrl_enet_1: enetgrp-1 {
+	fec {
+		pinctrl_fec_1: fecgrp-1 {
 			fsl,pins = <
 				MX6QDL_PAD_ENET_MDC__ENET_MDC         0x1b0b0
 				MX6QDL_PAD_ENET_MDIO__ENET_MDIO       0x1b0b0
@@ -1122,7 +1122,7 @@
 			>;
 		};
 
-		pinctrl_enet_1_sleep: enetgrp-1-sleep {
+		pinctrl_fec_1_sleep: fecgrp-1-sleep {
 			fsl,pins = <
 				MX6QDL_PAD_ENET_MDC__ENET_MDC         0x1b0b0
                                 MX6QDL_PAD_ENET_MDIO__ENET_MDIO       0x1b0b0
