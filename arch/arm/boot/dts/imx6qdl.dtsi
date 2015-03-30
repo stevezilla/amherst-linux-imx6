@@ -818,7 +818,7 @@
 			};
 
 			fec: ethernet@02188000 {
-				compatible = "fsl,imx6q-fec";
+				compatible = "smsc,lan8700";
 				reg = <0x02188000 0x4000>;
 				interrupts = <0 118 0x04 0 119 0x04>;
 				clocks = <&clks 117>, <&clks 117>, <&clks 190>;
