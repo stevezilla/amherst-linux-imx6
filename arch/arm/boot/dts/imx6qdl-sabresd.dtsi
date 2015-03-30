@@ -186,7 +186,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_enet_1>;
 	phy-mode = "rmii";
-	phy-reset-gpios = <&gpio3 1 0>;
+	phy-reset-gpios = <&gpio1 3 0>;
 	status = "okay";
 };
 
@@ -305,6 +305,8 @@
 				MX6QDL_PAD_SD3_RST__GPIO7_IO08 0x80000000
 				MX6QDL_PAD_GPIO_9__GPIO1_IO09 0x80000000
 				MX6QDL_PAD_GPIO_1__WDOG2_B 0x80000000
+				MX6QDL_PAD_GPIO_3__GPIO1_IO03         0x80000000
+                                MX6QDL_PAD_KEY_COL2__GPIO4_IO10       0x80000000
 			>;
 		};
 	};
