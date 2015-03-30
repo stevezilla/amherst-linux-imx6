@@ -818,14 +818,13 @@
 			};
 
 			fec: ethernet@02188000 {
-                                compatible = "fsl,imx6sl-fec", "fsl,imx25-fec";
-                                reg = <0x02188000 0x4000>;
+				compatible = "fsl,imx6q-fec";
+				reg = <0x02188000 0x4000>;
 				interrupts = <0 118 0x04 0 119 0x04>;
 				clocks = <&clks 117>, <&clks 117>, <&clks 190>;
-				clock-names = "ipg", "ahb", "enet_ref";
+				clock-names = "ipg", "ahb", "ptp";
 				status = "disabled";
-                        };
-
+			};
 
 			mlb: mlb@0218c000 {
 				compatible = "fsl,imx6q-mlb150";
@@ -1106,8 +1105,8 @@
 		};
 	};
 
-	fec {
-		pinctrl_fec_1: fecgrp-1 {
+	enet {
+		pinctrl_enet_1: enetgrp-1 {
 			fsl,pins = <
 				MX6QDL_PAD_ENET_MDC__ENET_MDC         0x1b0b0
 				MX6QDL_PAD_ENET_MDIO__ENET_MDIO       0x1b0b0
@@ -1117,21 +1116,52 @@
 				MX6QDL_PAD_ENET_TX_EN__ENET_TX_EN     0x1b0b0
 				MX6QDL_PAD_ENET_TXD0__ENET_TX_DATA0   0x1b0b0
 				MX6QDL_PAD_ENET_TXD1__ENET_TX_DATA1   0x1b0b0
+				MX6QDL_PAD_ENET_REF_CLK__ENET_TX_CLK  0x1b0b0
+				MX6QDL_PAD_GPIO_3__GPIO1_IO03         0x80000000
+				MX6QDL_PAD_KEY_COL2__GPIO4_IO10       0x80000000
+				MX6QDL_PAD_GPIO_16__ENET_REF_CLK      0x80000000
+			>;
+		};
+
+		pinctrl_enet_2: enetgrp-2 {
+			fsl,pins = <
+				MX6QDL_PAD_KEY_COL1__ENET_MDIO        0x1b0b0
+				MX6QDL_PAD_KEY_COL2__ENET_MDC         0x1b0b0
+				MX6QDL_PAD_RGMII_TXC__RGMII_TXC       0x1b0b0
+				MX6QDL_PAD_RGMII_TD0__RGMII_TD0       0x1b0b0
+				MX6QDL_PAD_RGMII_TD1__RGMII_TD1       0x1b0b0
+				MX6QDL_PAD_RGMII_TD2__RGMII_TD2       0x1b0b0
+				MX6QDL_PAD_RGMII_TD3__RGMII_TD3       0x1b0b0
+				MX6QDL_PAD_RGMII_TX_CTL__RGMII_TX_CTL 0x1b0b0
+				MX6QDL_PAD_ENET_REF_CLK__ENET_TX_CLK  0x1b0b0
+				MX6QDL_PAD_RGMII_RXC__RGMII_RXC       0x1b0b0
+				MX6QDL_PAD_RGMII_RD0__RGMII_RD0       0x1b0b0
+				MX6QDL_PAD_RGMII_RD1__RGMII_RD1       0x1b0b0
+				MX6QDL_PAD_RGMII_RD2__RGMII_RD2       0x1b0b0
+				MX6QDL_PAD_RGMII_RD3__RGMII_RD3       0x1b0b0
+				MX6QDL_PAD_RGMII_RX_CTL__RGMII_RX_CTL 0x1b0b0
 				MX6QDL_PAD_GPIO_16__ENET_REF_CLK      0x4001b0a8
 			>;
 		};
 
-		pinctrl_fec_1_sleep: fecgrp-1-sleep {
+		pinctrl_enet_3: enetgrp-3 {
 			fsl,pins = <
+				MX6QDL_PAD_ENET_MDIO__ENET_MDIO       0x1b0b0
 				MX6QDL_PAD_ENET_MDC__ENET_MDC         0x1b0b0
-                                MX6QDL_PAD_ENET_MDIO__ENET_MDIO       0x1b0b0
-                                MX6QDL_PAD_ENET_CRS_DV__ENET_RX_EN    0x1b0b0
-                                MX6QDL_PAD_ENET_RXD0__ENET_RX_DATA0   0x1b0b0
-                                MX6QDL_PAD_ENET_RXD1__ENET_RX_DATA1   0x1b0b0
-                                MX6QDL_PAD_ENET_TX_EN__ENET_TX_EN     0x1b0b0
-                                MX6QDL_PAD_ENET_TXD0__ENET_TX_DATA0   0x1b0b0
-                                MX6QDL_PAD_ENET_TXD1__ENET_TX_DATA1   0x1b0b0
-                                MX6QDL_PAD_GPIO_16__ENET_REF_CLK      0x4001b0a8
+				MX6QDL_PAD_RGMII_TXC__RGMII_TXC       0x1b0b0
+				MX6QDL_PAD_RGMII_TD0__RGMII_TD0       0x1b0b0
+				MX6QDL_PAD_RGMII_TD1__RGMII_TD1       0x1b0b0
+				MX6QDL_PAD_RGMII_TD2__RGMII_TD2       0x1b0b0
+				MX6QDL_PAD_RGMII_TD3__RGMII_TD3       0x1b0b0
+				MX6QDL_PAD_RGMII_TX_CTL__RGMII_TX_CTL 0x1b0b0
+				MX6QDL_PAD_ENET_REF_CLK__ENET_TX_CLK  0x1b0b0
+				MX6QDL_PAD_RGMII_RXC__RGMII_RXC       0x1b0b0
+				MX6QDL_PAD_RGMII_RD0__RGMII_RD0       0x1b0b0
+				MX6QDL_PAD_RGMII_RD1__RGMII_RD1       0x1b0b0
+				MX6QDL_PAD_RGMII_RD2__RGMII_RD2       0x1b0b0
+				MX6QDL_PAD_RGMII_RD3__RGMII_RD3       0x1b0b0
+				MX6QDL_PAD_RGMII_RX_CTL__RGMII_RX_CTL 0x1b0b0
+				MX6QDL_PAD_ENET_TX_EN__ENET_TX_EN     0x1b0b0
 			>;
 		};
 	};
