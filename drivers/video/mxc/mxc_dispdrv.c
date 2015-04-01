@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2014 Freescale Semiconductor, Inc. All Rights Reserved.
+ * Copyright (C) 2011-2013 Freescale Semiconductor, Inc. All Rights Reserved.
  */
 
 /*
@@ -18,14 +18,16 @@
  * A display device driver could call mxc_dispdrv_register(drv) in its dev_probe() function.
  * Move all dev_probe() things into mxc_dispdrv_driver->init(), init() function should init
  * and feedback setting;
+ * Necessary deferred operations can be done in mxc_dispdrv_driver->post_init(),
+ * after dev_id and disp_id pass usage check;
  * Move all dev_remove() things into mxc_dispdrv_driver->deinit();
  * Move all dev_suspend() things into fb_notifier for SUSPEND, if there is;
  * Move all dev_resume() things into fb_notifier for RESUME, if there is;
  *
- * mxc fb driver could call mxc_dispdrv_gethandle(name, setting) before a fb
+ * ipuv3 fb driver could call mxc_dispdrv_gethandle(name, setting) before a fb
  * need be added, with fbi param passing by setting, after
  * mxc_dispdrv_gethandle() return, FB driver should get the basic setting
- * about fbi info and crtc.
+ * about fbi info and ipuv3-hw (ipu_id and disp_id).
  *
  * @ingroup Framebuffer
  */

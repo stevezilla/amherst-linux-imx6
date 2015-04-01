@@ -87,7 +87,7 @@ static unsigned int _get_table_val(const struct clk_div_table *table,
 	return 0;
 }
 
-static unsigned int _get_val(struct clk_divider *divider, unsigned int div)
+static unsigned int _get_val(struct clk_divider *divider, u8 div)
 {
 	if (divider->flags & CLK_DIVIDER_ONE_BASED)
 		return div;
@@ -227,12 +227,8 @@ static int clk_divider_set_rate(struct clk_hw *hw, unsigned long rate,
 	if (divider->lock)
 		spin_lock_irqsave(divider->lock, flags);
 
-	if (divider->flags & CLK_DIVIDER_HIWORD_MASK) {
-		val = div_mask(divider) << (divider->shift + 16);
-	} else {
-		val = readl(divider->reg);
-		val &= ~(div_mask(divider) << divider->shift);
-	}
+	val = readl(divider->reg);
+	val &= ~(div_mask(divider) << divider->shift);
 	val |= value << divider->shift;
 	writel(val, divider->reg);
 
@@ -258,13 +254,6 @@ static struct clk *_register_divider(struct device *dev, const char *name,
 	struct clk_divider *div;
 	struct clk *clk;
 	struct clk_init_data init;
-
-	if (clk_divider_flags & CLK_DIVIDER_HIWORD_MASK) {
-		if (width + shift > 16) {
-			pr_warn("divider value exceeds LOWORD field\n");
-			return ERR_PTR(-EINVAL);
-		}
-	}
 
 	/* allocate the divider */
 	div = kzalloc(sizeof(struct clk_divider), GFP_KERNEL);
@@ -317,7 +306,6 @@ struct clk *clk_register_divider(struct device *dev, const char *name,
 	return _register_divider(dev, name, parent_name, flags, reg, shift,
 			width, clk_divider_flags, NULL, lock);
 }
-EXPORT_SYMBOL_GPL(clk_register_divider);
 
 /**
  * clk_register_divider_table - register a table based divider clock with
@@ -342,4 +330,3 @@ struct clk *clk_register_divider_table(struct device *dev, const char *name,
 	return _register_divider(dev, name, parent_name, flags, reg, shift,
 			width, clk_divider_flags, table, lock);
 }
-EXPORT_SYMBOL_GPL(clk_register_divider_table);

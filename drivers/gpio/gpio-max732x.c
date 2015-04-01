@@ -21,7 +21,6 @@
 #include <linux/irq.h>
 #include <linux/i2c.h>
 #include <linux/i2c/max732x.h>
-#include <linux/reset.h>
 
 
 /*
@@ -458,7 +457,7 @@ static int max732x_irq_setup(struct max732x_chip *chip,
 	int has_irq = max732x_features[id->driver_data] >> 32;
 	int ret;
 
-	if (pdata && pdata->irq_base && has_irq != INT_NONE) {
+	if (pdata->irq_base && has_irq != INT_NONE) {
 		int lvl;
 
 		chip->irq_base = pdata->irq_base;
@@ -516,7 +515,7 @@ static int max732x_irq_setup(struct max732x_chip *chip,
 	struct max732x_platform_data *pdata = client->dev.platform_data;
 	int has_irq = max732x_features[id->driver_data] >> 32;
 
-	if (pdata && pdata->irq_base && has_irq != INT_NONE)
+	if (pdata->irq_base && has_irq != INT_NONE)
 		dev_warn(&client->dev, "interrupt support not compiled in\n");
 
 	return 0;
@@ -571,7 +570,6 @@ static int max732x_setup_gpio(struct max732x_chip *chip,
 	gc->ngpio = port;
 	gc->label = chip->client->name;
 	gc->owner = THIS_MODULE;
-	gc->dev = &chip->client->dev;
 
 	return port;
 }
@@ -584,13 +582,12 @@ static int max732x_probe(struct i2c_client *client,
 	struct i2c_client *c;
 	uint16_t addr_a, addr_b;
 	int ret, nr_port;
-	int gpio_base = -1;
 
 	pdata = client->dev.platform_data;
-	if (pdata == NULL)
+	if (pdata == NULL) {
 		dev_dbg(&client->dev, "no platform data\n");
-	else
-		gpio_base = pdata->gpio_base;
+		return -EINVAL;
+	}
 
 	chip = devm_kzalloc(&client->dev, sizeof(struct max732x_chip),
 			GFP_KERNEL);
@@ -598,11 +595,7 @@ static int max732x_probe(struct i2c_client *client,
 		return -ENOMEM;
 	chip->client = client;
 
-	ret = device_reset(&client->dev);
-	if (ret == -ENODEV)
-		return -EPROBE_DEFER;
-
-	nr_port = max732x_setup_gpio(chip, id, gpio_base);
+	nr_port = max732x_setup_gpio(chip, id, pdata->gpio_base);
 
 	addr_a = (client->addr & 0x0f) | 0x60;
 	addr_b = (client->addr & 0x0f) | 0x50;
@@ -643,7 +636,7 @@ static int max732x_probe(struct i2c_client *client,
 	if (ret)
 		goto out_failed;
 
-	if (pdata && pdata->setup) {
+	if (pdata->setup) {
 		ret = pdata->setup(client, chip->gpio_chip.base,
 				chip->gpio_chip.ngpio, pdata->context);
 		if (ret < 0)
@@ -664,7 +657,7 @@ static int max732x_remove(struct i2c_client *client)
 	struct max732x_chip *chip = i2c_get_clientdata(client);
 	int ret;
 
-	if (pdata && pdata->teardown) {
+	if (pdata->teardown) {
 		ret = pdata->teardown(client, chip->gpio_chip.base,
 				chip->gpio_chip.ngpio, pdata->context);
 		if (ret < 0) {

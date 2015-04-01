@@ -79,10 +79,9 @@ static int pcie_port_enable_msix(struct pci_dev *dev, int *vectors, int mask)
 	u16 reg16;
 	u32 reg32;
 
-	nr_entries = pci_msix_vec_count(dev);
-	if (nr_entries < 0)
-		return nr_entries;
-	BUG_ON(!nr_entries);
+	nr_entries = pci_msix_table_size(dev);
+	if (!nr_entries)
+		return -EINVAL;
 	if (nr_entries > PCIE_PORT_MAX_MSIX_ENTRIES)
 		nr_entries = PCIE_PORT_MAX_MSIX_ENTRIES;
 
@@ -261,14 +260,13 @@ static int get_port_device_capability(struct pci_dev *dev)
 	if (pcie_ports_disabled)
 		return 0;
 
-	cap_mask = PCIE_PORT_SERVICE_PME | PCIE_PORT_SERVICE_HP
-			| PCIE_PORT_SERVICE_VC;
-	if (pci_aer_available())
-		cap_mask |= PCIE_PORT_SERVICE_AER;
-
-	if (pcie_ports_auto) {
-		err = pcie_port_platform_notify(dev, &cap_mask);
-		if (err)
+	err = pcie_port_platform_notify(dev, &cap_mask);
+	if (!pcie_ports_auto) {
+		cap_mask = PCIE_PORT_SERVICE_PME | PCIE_PORT_SERVICE_HP
+				| PCIE_PORT_SERVICE_VC;
+		if (pci_aer_available())
+			cap_mask |= PCIE_PORT_SERVICE_AER;
+	} else if (err) {
 			return 0;
 	}
 

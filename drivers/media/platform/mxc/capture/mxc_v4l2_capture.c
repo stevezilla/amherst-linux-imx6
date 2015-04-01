@@ -2375,17 +2375,6 @@ static long mxc_v4l_do_ioctl(struct file *file,
 		}
 		break;
 	}
-	case VIDIOC_ENUM_FRAMEINTERVALS: {
-		struct v4l2_frmivalenum *fival = arg;
-		if (cam->sensor) {
-			retval = vidioc_int_enum_frameintervals(cam->sensor,
-								fival);
-		} else {
-			pr_err("ERROR: v4l2 capture: slave not found!\n");
-			retval = -ENODEV;
-		}
-		break;
-	}
 	case VIDIOC_DBG_G_CHIP_IDENT: {
 		struct v4l2_dbg_chip_ident *p = arg;
 		p->ident = V4L2_IDENT_NONE;

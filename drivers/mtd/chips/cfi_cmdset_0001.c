@@ -69,10 +69,10 @@ static int cfi_intelext_read_fact_prot_reg (struct mtd_info *, loff_t, size_t, s
 static int cfi_intelext_read_user_prot_reg (struct mtd_info *, loff_t, size_t, size_t *, u_char *);
 static int cfi_intelext_write_user_prot_reg (struct mtd_info *, loff_t, size_t, size_t *, u_char *);
 static int cfi_intelext_lock_user_prot_reg (struct mtd_info *, loff_t, size_t);
-static int cfi_intelext_get_fact_prot_info(struct mtd_info *, size_t,
-					   size_t *, struct otp_info *);
-static int cfi_intelext_get_user_prot_info(struct mtd_info *, size_t,
-					   size_t *, struct otp_info *);
+static int cfi_intelext_get_fact_prot_info (struct mtd_info *,
+					    struct otp_info *, size_t);
+static int cfi_intelext_get_user_prot_info (struct mtd_info *,
+					    struct otp_info *, size_t);
 #endif
 static int cfi_intelext_suspend (struct mtd_info *);
 static void cfi_intelext_resume (struct mtd_info *);
@@ -435,8 +435,10 @@ struct mtd_info *cfi_cmdset_0001(struct map_info *map, int primary)
 	int i;
 
 	mtd = kzalloc(sizeof(*mtd), GFP_KERNEL);
-	if (!mtd)
+	if (!mtd) {
+		printk(KERN_ERR "Failed to allocate memory for MTD device\n");
 		return NULL;
+	}
 	mtd->priv = map;
 	mtd->type = MTD_NORFLASH;
 
@@ -562,8 +564,10 @@ static struct mtd_info *cfi_intelext_setup(struct mtd_info *mtd)
 	mtd->numeraseregions = cfi->cfiq->NumEraseRegions * cfi->numchips;
 	mtd->eraseregions = kmalloc(sizeof(struct mtd_erase_region_info)
 			* mtd->numeraseregions, GFP_KERNEL);
-	if (!mtd->eraseregions)
+	if (!mtd->eraseregions) {
+		printk(KERN_ERR "Failed to allocate memory for MTD erase region info\n");
 		goto setup_err;
+	}
 
 	for (i=0; i<cfi->cfiq->NumEraseRegions; i++) {
 		unsigned long ernum, ersize;
@@ -2395,19 +2399,24 @@ static int cfi_intelext_lock_user_prot_reg(struct mtd_info *mtd,
 				     NULL, do_otp_lock, 1);
 }
 
-static int cfi_intelext_get_fact_prot_info(struct mtd_info *mtd, size_t len,
-					   size_t *retlen, struct otp_info *buf)
-
+static int cfi_intelext_get_fact_prot_info(struct mtd_info *mtd,
+					   struct otp_info *buf, size_t len)
 {
-	return cfi_intelext_otp_walk(mtd, 0, len, retlen, (u_char *)buf,
-				     NULL, 0);
+	size_t retlen;
+	int ret;
+
+	ret = cfi_intelext_otp_walk(mtd, 0, len, &retlen, (u_char *)buf, NULL, 0);
+	return ret ? : retlen;
 }
 
-static int cfi_intelext_get_user_prot_info(struct mtd_info *mtd, size_t len,
-					   size_t *retlen, struct otp_info *buf)
+static int cfi_intelext_get_user_prot_info(struct mtd_info *mtd,
+					   struct otp_info *buf, size_t len)
 {
-	return cfi_intelext_otp_walk(mtd, 0, len, retlen, (u_char *)buf,
-				     NULL, 1);
+	size_t retlen;
+	int ret;
+
+	ret = cfi_intelext_otp_walk(mtd, 0, len, &retlen, (u_char *)buf, NULL, 1);
+	return ret ? : retlen;
 }
 
 #endif

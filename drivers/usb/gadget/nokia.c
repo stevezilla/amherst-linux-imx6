@@ -270,7 +270,7 @@ static int __init nokia_init(void)
 {
 	return usb_composite_probe(&nokia_driver);
 }
-late_initcall(nokia_init);
+module_init(nokia_init);
 
 static void __exit nokia_cleanup(void)
 {

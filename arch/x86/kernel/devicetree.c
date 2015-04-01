@@ -106,6 +106,7 @@ struct device_node *pcibios_get_phb_of_node(struct pci_bus *bus)
 
 static int x86_of_pci_irq_enable(struct pci_dev *dev)
 {
+	struct of_irq oirq;
 	u32 virq;
 	int ret;
 	u8 pin;
@@ -116,7 +117,12 @@ static int x86_of_pci_irq_enable(struct pci_dev *dev)
 	if (!pin)
 		return 0;
 
-	virq = of_irq_parse_and_map_pci(dev, 0, 0);
+	ret = of_irq_map_pci(dev, &oirq);
+	if (ret)
+		return ret;
+
+	virq = irq_create_of_mapping(oirq.controller, oirq.specifier,
+			oirq.size);
 	if (virq == 0)
 		return -EINVAL;
 	dev->irq = virq;

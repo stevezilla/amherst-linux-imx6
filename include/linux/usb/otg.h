@@ -14,7 +14,6 @@
 struct usb_otg {
 	u8			default_a;
 
-	struct otg_fsm		*fsm;
 	struct usb_phy		*phy;
 	struct usb_bus		*host;
 	struct usb_gadget	*gadget;

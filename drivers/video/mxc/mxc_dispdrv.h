@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2014 Freescale Semiconductor, Inc. All Rights Reserved.
+ * Copyright (C) 2011-2013 Freescale Semiconductor, Inc. All Rights Reserved.
  */
 
 /*
@@ -13,7 +13,6 @@
 #ifndef __MXC_DISPDRV_H__
 #define __MXC_DISPDRV_H__
 #include <linux/fb.h>
-#include "crtc.h"
 
 struct mxc_dispdrv_handle {
 	struct mxc_dispdrv_driver *drv;
@@ -26,18 +25,21 @@ struct mxc_dispdrv_setting {
 	int default_bpp;
 	char *dft_mode_str;
 
-	/* feedback parameter */
-	enum crtc crtc;
+	/*feedback parameter*/
+	int dev_id;
+	int disp_id;
 };
 
 struct mxc_dispdrv_driver {
 	const char *name;
 	int (*init) (struct mxc_dispdrv_handle *, struct mxc_dispdrv_setting *);
+	/* deferred operations after dev_id and disp_id pass usage check */
+	int (*post_init) (struct mxc_dispdrv_handle *, int dev_id, int disp_id);
 	void (*deinit) (struct mxc_dispdrv_handle *);
 	/* display driver enable function for extension */
-	int (*enable) (struct mxc_dispdrv_handle *, struct fb_info *);
+	int (*enable) (struct mxc_dispdrv_handle *);
 	/* display driver disable function, called at early part of fb_blank */
-	void (*disable) (struct mxc_dispdrv_handle *, struct fb_info *);
+	void (*disable) (struct mxc_dispdrv_handle *);
 	/* display driver setup function, called at early part of fb_set_par */
 	int (*setup) (struct mxc_dispdrv_handle *, struct fb_info *fbi);
 };

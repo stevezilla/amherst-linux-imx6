@@ -6,7 +6,7 @@
  * published by the Free Software Foundation.
  */
 
-#include "imx6dl-amherstsolo.dts"
+#include "imx6dl-sabresd.dts"
 
 &cpu0 {
 	arm-supply = <&reg_arm>;
@@ -26,12 +26,4 @@
 
 &vpu {
 	pu-supply = <&reg_pu>; /* ldo-bypass:use pu_dummy if VDDSOC share with VDDPU */
-};
-
-&wdog1 {
-	status = "okay";
-};
-
-&wdog2 {
-	status = "disabled";
 };

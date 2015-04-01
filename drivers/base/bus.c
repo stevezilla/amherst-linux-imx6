@@ -242,15 +242,13 @@ static ssize_t store_drivers_probe(struct bus_type *bus,
 				   const char *buf, size_t count)
 {
 	struct device *dev;
-	int err = -EINVAL;
 
 	dev = bus_find_device_by_name(bus, NULL, buf);
 	if (!dev)
 		return -ENODEV;
-	if (bus_rescan_devices_helper(dev, NULL) == 0)
-		err = count;
-	put_device(dev);
-	return err;
+	if (bus_rescan_devices_helper(dev, NULL) != 0)
+		return -EINVAL;
+	return count;
 }
 
 static struct device *next_device(struct klist_iter *i)
@@ -876,18 +874,6 @@ static void bus_remove_attrs(struct bus_type *bus)
 		for (i = 0; attr_name(bus->bus_attrs[i]); i++)
 			bus_remove_file(bus, &bus->bus_attrs[i]);
 	}
-}
-
-static int bus_add_groups(struct bus_type *bus,
-			  const struct attribute_group **groups)
-{
-	return sysfs_create_groups(&bus->p->subsys.kobj, groups);
-}
-
-static void bus_remove_groups(struct bus_type *bus,
-			      const struct attribute_group **groups)
-{
-	sysfs_remove_groups(&bus->p->subsys.kobj, groups);
 }
 
 static void klist_devices_get(struct klist_node *n)

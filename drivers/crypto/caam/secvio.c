@@ -1,7 +1,7 @@
 
 /*
- * SNVS Security Violation Handler
- * Copyright (C) 2012-2015 Freescale Semiconductor, Inc., All Rights Reserved
+ * CAAM/SEC 4.x Security Violation Handler
+ * Copyright (C) 2013 Freescale Semiconductor, Inc., All Rights Reserved
  */
 
 #include "compat.h"
@@ -15,49 +15,33 @@
  * for most common SoCs.
  */
 static const u8 *violation_src_name[] = {
-	"CAAM Internal Security Violation",
+	"CAAM Security Violation",
 	"JTAG Alarm",
 	"Watchdog",
 	"(reserved)",
 	"External Boot",
-	"External Tamper Detect",
-};
-
-/* These names help describe security monitor state for the console */
-static const u8 *snvs_ssm_state_name[] = {
-	"init",
-	"hard fail",
-	"(undef:2)",
-	"soft fail",
-	"(undef:4)",
-	"(undef:5)",
-	"(undef:6)",
-	"(undef:7)",
-	"transition",
-	"check",
-	"(undef:10)",
-	"non-secure",
-	"(undef:12)",
-	"trusted",
-	"(undef:14)",
-	"secure",
+	"Tamper Detect",
 };
 
 /* Top-level security violation interrupt */
-static irqreturn_t snvs_secvio_interrupt(int irq, void *snvsdev)
+static irqreturn_t caam_secvio_interrupt(int irq, void *snvsdev)
 {
 	struct device *dev = snvsdev;
-	struct snvs_secvio_drv_private *svpriv = dev_get_drvdata(dev);
+	struct caam_drv_private_secvio *svpriv = dev_get_drvdata(dev);
+	u32 irqstate;
 
 	/* Check the HP secvio status register */
-	svpriv->irqcause = rd_reg32(&svpriv->svregs->hp.secvio_status) &
-				    HP_SECVIOST_SECVIOMASK;
+	irqstate = rd_reg32(&svpriv->svregs->hp.secvio_status) |
+			    HP_SECVIOST_SECVIOMASK;
 
-	if (!svpriv->irqcause)
+	if (!irqstate)
 		return IRQ_NONE;
 
-	/* Now ACK cause */
-	setbits32(&svpriv->svregs->hp.secvio_status, svpriv->irqcause);
+	/* Mask out one or more causes for deferred service */
+	clrbits32(&svpriv->svregs->hp.secvio_int_ctl, irqstate);
+
+	/* Now ACK causes */
+	setbits32(&svpriv->svregs->hp.secvio_status, irqstate);
 
 	/* And run deferred service */
 	preempt_disable();
@@ -68,17 +52,28 @@ static irqreturn_t snvs_secvio_interrupt(int irq, void *snvsdev)
 }
 
 /* Deferred service handler. Tasklet arg is simply the SNVS dev */
-static void snvs_secvio_dispatch(unsigned long indev)
+static void caam_secvio_dispatch(unsigned long indev)
 {
 	struct device *dev = (struct device *)indev;
-	struct snvs_secvio_drv_private *svpriv = dev_get_drvdata(dev);
-	unsigned long flags;
+	struct caam_drv_private_secvio *svpriv = dev_get_drvdata(dev);
+	unsigned long flags, cause;
 	int i;
 
 
-	/* Look through stored causes, call each handler if exists */
+	/*
+	 * Capture the interrupt cause, using masked interrupts as
+	 * identification. This only works if all are enabled; if
+	  * this changes in the future, a "cause queue" will have to
+	 * be built
+	 */
+	cause = rd_reg32(&svpriv->svregs->hp.secvio_int_ctl) &
+			(HP_SECVIO_INTEN_SRC5 | HP_SECVIO_INTEN_SRC4 |
+			 HP_SECVIO_INTEN_SRC3 | HP_SECVIO_INTEN_SRC2 |
+			 HP_SECVIO_INTEN_SRC1 | HP_SECVIO_INTEN_SRC0);
+
+	/* Look through causes, call each handler if exists */
 	for (i = 0; i < MAX_SECVIO_SOURCES; i++)
-		if (svpriv->irqcause & (1 << i)) {
+		if (cause & (1 << i)) {
 			spin_lock_irqsave(&svpriv->svlock, flags);
 			svpriv->intsrc[i].handler(dev, i,
 						  svpriv->intsrc[i].ext);
@@ -86,16 +81,16 @@ static void snvs_secvio_dispatch(unsigned long indev)
 		};
 
 	/* Re-enable now-serviced interrupts */
-	setbits32(&svpriv->svregs->hp.secvio_intcfg, svpriv->irqcause);
+	setbits32(&svpriv->svregs->hp.secvio_int_ctl, cause);
 }
 
 /*
  * Default cause handler, used in lieu of an application-defined handler.
  * All it does at this time is print a console message. It could force a halt.
  */
-static void snvs_secvio_default(struct device *dev, u32 cause, void *ext)
+static void caam_secvio_default(struct device *dev, u32 cause, void *ext)
 {
-	struct snvs_secvio_drv_private *svpriv = dev_get_drvdata(dev);
+	struct caam_drv_private_secvio *svpriv = dev_get_drvdata(dev);
 
 	dev_err(dev, "Unhandled Security Violation Interrupt %d = %s\n",
 		cause, svpriv->intsrc[cause].intname);
@@ -114,13 +109,13 @@ static void snvs_secvio_default(struct device *dev, u32 cause, void *ext)
  *                       description string is used.
  * - ext        pointer to any extra data needed by the handler.
  */
-int snvs_secvio_install_handler(struct device *dev, enum secvio_cause cause,
+int caam_secvio_install_handler(struct device *dev, enum secvio_cause cause,
 				void (*handler)(struct device *dev, u32 cause,
 						void *ext),
 				u8 *cause_description, void *ext)
 {
 	unsigned long flags;
-	struct snvs_secvio_drv_private *svpriv;
+	struct caam_drv_private_secvio *svpriv;
 
 	svpriv = dev_get_drvdata(dev);
 
@@ -137,7 +132,7 @@ int snvs_secvio_install_handler(struct device *dev, enum secvio_cause cause,
 
 	return 0;
 }
-EXPORT_SYMBOL(snvs_secvio_install_handler);
+EXPORT_SYMBOL(caam_secvio_install_handler);
 
 /*
  * Remove an application-defined handler for a specified cause (and, by
@@ -146,10 +141,10 @@ EXPORT_SYMBOL(snvs_secvio_install_handler);
  * - dev	points to SNVS-owning device
  * - cause	interrupt source cause
  */
-int snvs_secvio_remove_handler(struct device *dev, enum secvio_cause cause)
+int caam_secvio_remove_handler(struct device *dev, enum secvio_cause cause)
 {
 	unsigned long flags;
-	struct snvs_secvio_drv_private *svpriv;
+	struct caam_drv_private_secvio *svpriv;
 
 	svpriv = dev_get_drvdata(dev);
 
@@ -158,133 +153,181 @@ int snvs_secvio_remove_handler(struct device *dev, enum secvio_cause cause)
 
 	spin_lock_irqsave(&svpriv->svlock, flags);
 	svpriv->intsrc[cause].intname = violation_src_name[cause];
-	svpriv->intsrc[cause].handler = snvs_secvio_default;
+	svpriv->intsrc[cause].handler = caam_secvio_default;
 	svpriv->intsrc[cause].ext = NULL;
 	spin_unlock_irqrestore(&svpriv->svlock, flags);
 	return 0;
 }
-EXPORT_SYMBOL(snvs_secvio_remove_handler);
+EXPORT_SYMBOL(caam_secvio_remove_handler);
 
-static int snvs_secvio_remove(struct platform_device *pdev)
+int caam_secvio_startup(struct platform_device *pdev)
 {
-	struct device *svdev;
-	struct snvs_secvio_drv_private *svpriv;
+	struct device *ctrldev, *svdev;
+	struct caam_drv_private *ctrlpriv;
+	struct caam_drv_private_secvio *svpriv;
+	struct platform_device *svpdev;
+	struct device_node *np;
+	const void *prop;
+	int i, error, secvio_inten_src;
+
+	ctrldev = &pdev->dev;
+	ctrlpriv = dev_get_drvdata(ctrldev);
+	/*
+	 * Set up the private block for secure memory
+	 * Only one instance is possible
+	 */
+	svpriv = kzalloc(sizeof(struct caam_drv_private_secvio), GFP_KERNEL);
+	if (svpriv == NULL) {
+		dev_err(ctrldev, "can't alloc private mem for secvio\n");
+		return -ENOMEM;
+	}
+	svpriv->parentdev = ctrldev;
+
+	/* Create the security violation dev */
+#ifdef CONFIG_OF
+
+	np = of_find_compatible_node(NULL, NULL, "fsl,imx6q-caam-secvio");
+	if (!np)
+		return -ENODEV;
+
+	ctrlpriv->secvio_irq = of_irq_to_resource(np, 0, NULL);
+
+	prop = of_get_property(np, "secvio_src", NULL);
+	if (prop)
+		secvio_inten_src = of_read_ulong(prop, 1);
+	else
+		secvio_inten_src = HP_SECVIO_INTEN_ALL;
+
+	svpdev = of_platform_device_create(np, NULL, ctrldev);
+	if (!svpdev)
+		return -ENODEV;
+
+#else
+	svpdev = platform_device_register_data(ctrldev, "caam_secvio", 0,
+					       svpriv,
+				sizeof(struct caam_drv_private_secvio));
+
+	secvio_inten_src = HP_SECVIO_INTEN_ALL;
+#endif
+	if (svpdev == NULL) {
+		kfree(svpriv);
+		return -EINVAL;
+	}
+	svdev = &svpdev->dev;
+	dev_set_drvdata(svdev, svpriv);
+	ctrlpriv->secviodev = svdev;
+	svpriv->svregs = ctrlpriv->snvs;
+
+	/*
+	 * Now we have all the dev data set up. Init interrupt
+	 * source descriptions
+	 */
+	for (i = 0; i < MAX_SECVIO_SOURCES; i++) {
+		svpriv->intsrc[i].intname = violation_src_name[i];
+		svpriv->intsrc[i].handler = caam_secvio_default;
+	}
+
+	/* Connect main handler */
+	for_each_possible_cpu(i)
+		tasklet_init(&svpriv->irqtask[i], caam_secvio_dispatch,
+			     (unsigned long)svdev);
+
+	error = request_irq(ctrlpriv->secvio_irq, caam_secvio_interrupt,
+			    IRQF_SHARED, "caam_secvio", svdev);
+	if (error) {
+		dev_err(svdev, "can't connect secvio interrupt\n");
+		irq_dispose_mapping(ctrlpriv->secvio_irq);
+		ctrlpriv->secvio_irq = 0;
+		return -EINVAL;
+	}
+
+	/* Enable all sources */
+	wr_reg32(&svpriv->svregs->hp.secvio_int_ctl, secvio_inten_src);
+
+	dev_info(svdev, "security violation service handlers armed\n");
+
+	return 0;
+}
+
+void caam_secvio_shutdown(struct platform_device *pdev)
+{
+	struct device *ctrldev, *svdev;
+	struct caam_drv_private *priv;
+	struct caam_drv_private_secvio *svpriv;
 	int i;
 
-	svdev = &pdev->dev;
+	ctrldev = &pdev->dev;
+	priv = dev_get_drvdata(ctrldev);
+	svdev = priv->secviodev;
 	svpriv = dev_get_drvdata(svdev);
 
-	/* Set all sources to nonfatal */
-	wr_reg32(&svpriv->svregs->hp.secvio_intcfg, 0);
+	/* Shut off all sources */
+
+	wr_reg32(&svpriv->svregs->hp.secvio_int_ctl, 0);
 
 	/* Remove tasklets and release interrupt */
 	for_each_possible_cpu(i)
 		tasklet_kill(&svpriv->irqtask[i]);
 
-	free_irq(svpriv->irq, svdev);
-	iounmap(svpriv->svregs);
-	kfree(svpriv);
+	free_irq(priv->secvio_irq, svdev);
 
-	return 0;
+	kfree(svpriv);
 }
 
-static int snvs_secvio_probe(struct platform_device *pdev)
+
+#ifdef CONFIG_OF
+static void __exit caam_secvio_exit(void)
 {
-	struct device *svdev;
-	struct snvs_secvio_drv_private *svpriv;
-	struct device_node *np, *npirq;
-	struct snvs_full __iomem *snvsregs;
-	int i, error;
-	u32 hpstate;
+	struct device_node *dev_node;
+	struct platform_device *pdev;
 
-	svpriv = kzalloc(sizeof(struct snvs_secvio_drv_private), GFP_KERNEL);
-	if (!svpriv)
-		return -ENOMEM;
-
-	svdev = &pdev->dev;
-	dev_set_drvdata(svdev, svpriv);
-	svpriv->pdev = pdev;
-	np = pdev->dev.of_node;
-
-	npirq = of_find_compatible_node(NULL, NULL, "fsl,imx6q-caam-secvio");
-	if (!npirq) {
-		dev_err(svdev, "can't identify secvio interrupt\n");
-		kfree(svpriv);
-		return -EINVAL;
-	}
-	svpriv->irq = irq_of_parse_and_map(npirq, 0);
-	if (svpriv->irq <= 0) {
-		kfree(svpriv);
-		return -EINVAL;
+	dev_node = of_find_compatible_node(NULL, NULL, "fsl,sec-v4.0");
+	if (!dev_node) {
+		dev_node = of_find_compatible_node(NULL, NULL, "fsl,sec4.0");
+		if (!dev_node)
+			return;
 	}
 
-	snvsregs = of_iomap(np, 0);
-	if (!snvsregs) {
-		dev_err(svdev, "register mapping failed\n");
-		return -ENOMEM;
-	}
-	svpriv->svregs = (struct snvs_full __force *)snvsregs;
+	pdev = of_find_device_by_node(dev_node);
+	if (!pdev)
+		return;
 
-	 /* Device data set up. Now init interrupt source descriptions */
-	for (i = 0; i < MAX_SECVIO_SOURCES; i++) {
-		svpriv->intsrc[i].intname = violation_src_name[i];
-		svpriv->intsrc[i].handler = snvs_secvio_default;
-	}
-	/* Connect main handler */
-	for_each_possible_cpu(i)
-		tasklet_init(&svpriv->irqtask[i], snvs_secvio_dispatch,
-			     (unsigned long)svdev);
+	of_node_get(dev_node);
 
-	error = request_irq(svpriv->irq, snvs_secvio_interrupt,
-			    IRQF_SHARED, "snvs-secvio", svdev);
-	if (error) {
-		dev_err(svdev, "can't connect secvio interrupt\n");
-		irq_dispose_mapping(svpriv->irq);
-		svpriv->irq = 0;
-		iounmap(svpriv->svregs);
-		kfree(svpriv);
-		return -EINVAL;
-	}
+	caam_secvio_shutdown(pdev);
+
+}
+
+static int __init caam_secvio_init(void)
+{
+	struct device_node *dev_node;
+	struct platform_device *pdev;
 
 	/*
-	 * Configure all sources as fatal violations except LP section,
-	 * source #5 (typically used as an external tamper detect), and
-	 * source #3 (typically unused). Whenever the transition to
-	 * secure mode has occurred, these will now be "fatal" violations
+	 * Do of_find_compatible_node() then of_find_device_by_node()
+	 * once a functional device tree is available
 	 */
-	wr_reg32(&svpriv->svregs->hp.secvio_intcfg,
-		 HP_SECVIO_INTEN_SRC4 | HP_SECVIO_INTEN_SRC2 |
-		 HP_SECVIO_INTEN_SRC1 | HP_SECVIO_INTEN_SRC0);
+	dev_node = of_find_compatible_node(NULL, NULL, "fsl,sec-v4.0");
+	if (!dev_node) {
+		dev_node = of_find_compatible_node(NULL, NULL,
+				"arm,imx6-caam-secvio");
+		if (!dev_node)
+			return -ENODEV;
+	}
 
-	hpstate = (rd_reg32(&svpriv->svregs->hp.status) &
-			    HP_STATUS_SSM_ST_MASK) >> HP_STATUS_SSM_ST_SHIFT;
-	dev_info(svdev, "violation handlers armed - %s state\n",
-		 snvs_ssm_state_name[hpstate]);
+	pdev = of_find_device_by_node(dev_node);
+	if (!pdev)
+		return -ENODEV;
 
-	return 0;
+	of_node_put(dev_node);
+
+	return caam_secvio_startup(pdev);
 }
 
-static struct of_device_id snvs_secvio_match[] = {
-	{
-		.compatible = "fsl,imx6q-caam-snvs",
-	},
-	{},
-};
-MODULE_DEVICE_TABLE(of, snvs_secvio_match);
-
-static struct platform_driver snvs_secvio_driver = {
-	.driver = {
-		.name = "snvs-secvio",
-		.owner = THIS_MODULE,
-		.of_match_table = snvs_secvio_match,
-	},
-	.probe       = snvs_secvio_probe,
-	.remove      = snvs_secvio_remove,
-};
-
-module_platform_driver(snvs_secvio_driver);
+module_init(caam_secvio_init);
+module_exit(caam_secvio_exit);
 
 MODULE_LICENSE("Dual BSD/GPL");
-MODULE_DESCRIPTION("FSL SNVS Security Violation Handler");
-MODULE_AUTHOR("Freescale Semiconductor - MCU");
-
+MODULE_DESCRIPTION("FSL CAAM/SNVS Security Violation Handler");
+MODULE_AUTHOR("Freescale Semiconductor - NMSG/MAD");
+#endif

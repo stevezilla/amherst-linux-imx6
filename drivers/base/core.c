@@ -463,13 +463,31 @@ static void device_remove_bin_attributes(struct device *dev,
 
 int device_add_groups(struct device *dev, const struct attribute_group **groups)
 {
-	return sysfs_create_groups(&dev->kobj, groups);
+	int error = 0;
+	int i;
+
+	if (groups) {
+		for (i = 0; groups[i]; i++) {
+			error = sysfs_create_group(&dev->kobj, groups[i]);
+			if (error) {
+				while (--i >= 0)
+					sysfs_remove_group(&dev->kobj,
+							   groups[i]);
+				break;
+			}
+		}
+	}
+	return error;
 }
 
 void device_remove_groups(struct device *dev,
 			  const struct attribute_group **groups)
 {
-	sysfs_remove_groups(&dev->kobj, groups);
+	int i;
+
+	if (groups)
+		for (i = 0; groups[i]; i++)
+			sysfs_remove_group(&dev->kobj, groups[i]);
 }
 
 static int device_add_attrs(struct device *dev)
@@ -746,12 +764,12 @@ class_dir_create_and_add(struct class *class, struct kobject *parent_kobj)
 	return &dir->kobj;
 }
 
-static DEFINE_MUTEX(gdp_mutex);
 
 static struct kobject *get_device_parent(struct device *dev,
 					 struct device *parent)
 {
 	if (dev->class) {
+		static DEFINE_MUTEX(gdp_mutex);
 		struct kobject *kobj = NULL;
 		struct kobject *parent_kobj;
 		struct kobject *k;
@@ -815,9 +833,7 @@ static void cleanup_glue_dir(struct device *dev, struct kobject *glue_dir)
 	    glue_dir->kset != &dev->class->p->glue_dirs)
 		return;
 
-	mutex_lock(&gdp_mutex);
 	kobject_put(glue_dir);
-	mutex_unlock(&gdp_mutex);
 }
 
 static void cleanup_device_parent(struct device *dev)

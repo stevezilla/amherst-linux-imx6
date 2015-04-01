@@ -442,8 +442,8 @@ static int dataflash_write(struct mtd_info *mtd, loff_t to, size_t len,
 
 #ifdef CONFIG_MTD_DATAFLASH_OTP
 
-static int dataflash_get_otp_info(struct mtd_info *mtd, size_t len,
-				  size_t *retlen, struct otp_info *info)
+static int dataflash_get_otp_info(struct mtd_info *mtd,
+		struct otp_info *info, size_t len)
 {
 	/* Report both blocks as identical:  bytes 0..64, locked.
 	 * Unless the user block changed from all-ones, we can't
@@ -452,8 +452,7 @@ static int dataflash_get_otp_info(struct mtd_info *mtd, size_t len,
 	info->start = 0;
 	info->length = 64;
 	info->locked = 1;
-	*retlen = sizeof(*info);
-	return 0;
+	return sizeof(*info);
 }
 
 static ssize_t otp_read(struct spi_device *spi, unsigned base,

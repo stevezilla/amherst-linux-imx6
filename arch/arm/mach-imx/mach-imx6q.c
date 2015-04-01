@@ -234,79 +234,60 @@ static void __init imx6q_csi_mux_init(void)
 #define OCOTP_MACn(n)	(0x00000620 + (n) * 0x10)
 void __init imx6_enet_mac_init(const char *compatible)
 {
-	struct device_node *ocotp_np, *enet_np, *from = NULL;
+	struct device_node *ocotp_np, *enet_np;
 	void __iomem *base;
 	struct property *newmac;
-	u32 macaddr_low;
-	u32 macaddr_high = 0;
-	u32 macaddr1_high = 0;
+	u32 macaddr_low, macaddr_high;
 	u8 *macaddr;
-	int i;
 
-	for (i = 0; i < 2; i++) {
-		enet_np = of_find_compatible_node(from, NULL, compatible);
-		if (!enet_np)
-			return;
+	enet_np = of_find_compatible_node(NULL, NULL, compatible);
+	if (!enet_np)
+		return;
 
-		from = enet_np;
+	if (of_get_mac_address(enet_np))
+		goto put_enet_node;
 
-		if (of_get_mac_address(enet_np))
-			goto put_enet_node;
+	ocotp_np = of_find_compatible_node(NULL, NULL, "fsl,imx6q-ocotp");
+	if (!ocotp_np) {
+		pr_warn("failed to find ocotp node\n");
+		goto put_enet_node;
+	}
 
-		ocotp_np = of_find_compatible_node(NULL, NULL, "fsl,imx6q-ocotp");
-		if (!ocotp_np) {
-			pr_warn("failed to find ocotp node\n");
-			goto put_enet_node;
-		}
+	base = of_iomap(ocotp_np, 0);
+	if (!base) {
+		pr_warn("failed to map ocotp\n");
+		goto put_ocotp_node;
+	}
 
-		base = of_iomap(ocotp_np, 0);
-		if (!base) {
-			pr_warn("failed to map ocotp\n");
-			goto put_ocotp_node;
-		}
+	macaddr_high = readl_relaxed(base + OCOTP_MACn(0));
+	macaddr_low = readl_relaxed(base + OCOTP_MACn(1));
 
-		macaddr_low = readl_relaxed(base + OCOTP_MACn(1));
-		if (i)
-			macaddr1_high = readl_relaxed(base + OCOTP_MACn(2));
-		else
-			macaddr_high = readl_relaxed(base + OCOTP_MACn(0));
+	newmac = kzalloc(sizeof(*newmac) + 6, GFP_KERNEL);
+	if (!newmac)
+		goto put_ocotp_node;
 
-		newmac = kzalloc(sizeof(*newmac) + 6, GFP_KERNEL);
-		if (!newmac)
-			goto put_ocotp_node;
+	newmac->value = newmac + 1;
+	newmac->length = 6;
+	newmac->name = kstrdup("local-mac-address", GFP_KERNEL);
+	if (!newmac->name) {
+		kfree(newmac);
+		goto put_ocotp_node;
+	}
 
-		newmac->value = newmac + 1;
-		newmac->length = 6;
-		newmac->name = kstrdup("local-mac-address", GFP_KERNEL);
-		if (!newmac->name) {
-			kfree(newmac);
-			goto put_ocotp_node;
-		}
+	macaddr = newmac->value;
+	macaddr[5] = macaddr_high & 0xff;
+	macaddr[4] = (macaddr_high >> 8) & 0xff;
+	macaddr[3] = (macaddr_high >> 16) & 0xff;
+	macaddr[2] = (macaddr_high >> 24) & 0xff;
+	macaddr[1] = macaddr_low & 0xff;
+	macaddr[0] = (macaddr_low >> 8) & 0xff;
 
-		macaddr = newmac->value;
-		if (i) {
-			macaddr[5] = (macaddr_low >> 16) & 0xff;
-			macaddr[4] = (macaddr_low >> 24) & 0xff;
-			macaddr[3] = macaddr1_high & 0xff;
-			macaddr[2] = (macaddr1_high >> 8) & 0xff;
-			macaddr[1] = (macaddr1_high >> 16) & 0xff;
-			macaddr[0] = (macaddr1_high >> 24) & 0xff;
-		} else {
-			macaddr[5] = macaddr_high & 0xff;
-			macaddr[4] = (macaddr_high >> 8) & 0xff;
-			macaddr[3] = (macaddr_high >> 16) & 0xff;
-			macaddr[2] = (macaddr_high >> 24) & 0xff;
-			macaddr[1] = macaddr_low & 0xff;
-			macaddr[0] = (macaddr_low >> 8) & 0xff;
-		}
-
-		of_update_property(enet_np, newmac);
+	of_update_property(enet_np, newmac);
 
 put_ocotp_node:
 	of_node_put(ocotp_np);
 put_enet_node:
 	of_node_put(enet_np);
-	}
 }
 
 static inline void imx6q_enet_init(void)
@@ -391,12 +372,6 @@ static void __init imx6q_opp_check_speed_grading(struct device *cpu_dev)
 				pr_warn("failed to disable 850 MHz OPP\n");
 	}
 
-	if (IS_ENABLED(CONFIG_MX6_VPU_352M)) {
-		if (opp_disable(cpu_dev, 396000000))
-			pr_warn("failed to disable 396MHz OPP\n");
-		pr_info("remove 396MHz OPP for VPU running at 352MHz!\n");
-	}
-
 put_node:
 	of_node_put(np);
 }
@@ -427,14 +402,14 @@ put_node:
 
 static void __init imx6q_audio_lvds2_init(void)
 {
-	struct clk *pll4_sel, *lvds2_in, *pll4_audio_div, *esai_extal;
+	struct clk *pll4_sel, *lvds2_in, *pll4_audio_div, *esai;
 
 	pll4_audio_div = clk_get_sys(NULL, "pll4_audio_div");
 	pll4_sel = clk_get_sys(NULL, "pll4_sel");
 	lvds2_in = clk_get_sys(NULL, "lvds2_in");
-	esai_extal = clk_get_sys(NULL, "esai_extal");
+	esai = clk_get_sys(NULL, "esai");
 	if (IS_ERR(pll4_audio_div) || IS_ERR(pll4_sel) ||
-	    IS_ERR(lvds2_in) || IS_ERR(esai_extal))
+	    IS_ERR(lvds2_in) || IS_ERR(esai))
 		return;
 
 	if (clk_get_rate(lvds2_in) != ESAI_AUDIO_MCLK)
@@ -442,7 +417,7 @@ static void __init imx6q_audio_lvds2_init(void)
 
 	clk_set_parent(pll4_sel, lvds2_in);
 	clk_set_rate(pll4_audio_div, 786432000);
-	clk_set_rate(esai_extal, ESAI_AUDIO_MCLK);
+	clk_set_rate(esai, ESAI_AUDIO_MCLK);
 }
 
 static struct platform_device imx6q_cpufreq_pdev = {
@@ -489,7 +464,6 @@ static void __init imx6q_map_io(void)
 	debug_ll_io_init();
 	imx_scu_map_io();
 	imx6_pm_map_io();
-	imx6_busfreq_map_io();
 }
 
 static void __init imx6q_init_irq(void)

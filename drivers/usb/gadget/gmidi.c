@@ -167,7 +167,7 @@ static int __init midi_init(void)
 {
 	return usb_composite_probe(&midi_driver);
 }
-late_initcall(midi_init);
+module_init(midi_init);
 
 static void __exit midi_cleanup(void)
 {

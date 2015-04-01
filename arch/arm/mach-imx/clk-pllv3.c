@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 Freescale Semiconductor, Inc.
+ * Copyright 2012-2013 Freescale Semiconductor, Inc.
  * Copyright 2012 Linaro Ltd.
  *
  * The code contained herein is licensed under the GNU General Public
@@ -12,13 +12,11 @@
 
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
-#include <linux/imx_sema4.h>
 #include <linux/io.h>
 #include <linux/slab.h>
 #include <linux/jiffies.h>
 #include <linux/err.h>
 #include "clk.h"
-#include "common.h"
 
 #define PLL_NUM_OFFSET		0x10
 #define PLL_DENOM_OFFSET	0x20
@@ -48,8 +46,8 @@ struct clk_pllv3 {
 	bool		always_on;
 	u32		div_mask;
 	u32		rate_req;
-	bool		powered;
 };
+
 #define to_clk_pllv3(_hw) container_of(_hw, struct clk_pllv3, hw)
 
 static int clk_pllv3_wait_for_lock(struct clk_pllv3 *pll, u32 timeout_ms)
@@ -99,74 +97,37 @@ static int clk_pllv3_power_up_down(struct clk_hw *hw, bool enable)
 			val |= BM_PLL_POWER;
 		writel_relaxed(val, pll->base);
 	}
-
-	pll->powered = enable;
-
 	return ret;
 }
 
-static int clk_pllv3_do_hardware(struct clk_hw *hw, bool enable)
+
+static int clk_pllv3_enable(struct clk_hw *hw)
 {
 	struct clk_pllv3 *pll = to_clk_pllv3(hw);
 	u32 val;
 
-	if (enable) {
-		if (pll->rate_req != BYPASS_RATE)
-			clk_pllv3_power_up_down(hw, true);
-		val = readl_relaxed(pll->base);
-		val |= BM_PLL_ENABLE;
-		writel_relaxed(val, pll->base);
-	} else {
-		val = readl_relaxed(pll->base);
-		if (!pll->always_on)
-			val &= ~BM_PLL_ENABLE;
-		writel_relaxed(val, pll->base);
+	if (pll->rate_req != BYPASS_RATE)
+		clk_pllv3_power_up_down(hw, true);
 
-		if (pll->rate_req != BYPASS_RATE)
-			clk_pllv3_power_up_down(hw, false);
-	}
-
-	return 0;
-}
-
-static void clk_pllv3_do_shared_clks(struct clk_hw *hw, bool enable)
-{
-	if (imx_src_is_m4_enabled()) {
-		if (!amp_power_mutex || !shared_mem) {
-			if (enable)
-				clk_pllv3_do_hardware(hw, enable);
-			return;
-		}
-
-		imx_sema4_mutex_lock(amp_power_mutex);
-		if (shared_mem->ca9_valid != SHARED_MEM_MAGIC_NUMBER ||
-			shared_mem->cm4_valid != SHARED_MEM_MAGIC_NUMBER) {
-			imx_sema4_mutex_unlock(amp_power_mutex);
-			return;
-		}
-
-		if (!imx_update_shared_mem(hw, enable)) {
-			imx_sema4_mutex_unlock(amp_power_mutex);
-			return;
-		}
-		clk_pllv3_do_hardware(hw, enable);
-
-		imx_sema4_mutex_unlock(amp_power_mutex);
-	} else {
-		clk_pllv3_do_hardware(hw, enable);
-	}
-}
-
-static int clk_pllv3_enable(struct clk_hw *hw)
-{
-	clk_pllv3_do_shared_clks(hw, true);
+	val = readl_relaxed(pll->base);
+	val |= BM_PLL_ENABLE;
+	writel_relaxed(val, pll->base);
 
 	return 0;
 }
 
 static void clk_pllv3_disable(struct clk_hw *hw)
 {
-	clk_pllv3_do_shared_clks(hw, false);
+	struct clk_pllv3 *pll = to_clk_pllv3(hw);
+	u32 val;
+
+	val = readl_relaxed(pll->base);
+	if (!pll->always_on)
+		val &= ~BM_PLL_ENABLE;
+	writel_relaxed(val, pll->base);
+
+	if (pll->rate_req != BYPASS_RATE)
+		clk_pllv3_power_up_down(hw, false);
 }
 
 static unsigned long clk_pllv3_recalc_rate(struct clk_hw *hw,
@@ -177,7 +138,7 @@ static unsigned long clk_pllv3_recalc_rate(struct clk_hw *hw,
 	u32 bypass = readl_relaxed(pll->base) & BYPASS_MASK;
 	u32 rate;
 
-	if (bypass)
+	if (pll->rate_req == BYPASS_RATE && bypass)
 		rate = BYPASS_RATE;
 	else
 		rate = (div == 1) ? parent_rate * 22 : parent_rate * 20;
@@ -226,12 +187,6 @@ static int clk_pllv3_set_rate(struct clk_hw *hw, unsigned long rate,
 		div = 0;
 	else
 		return -EINVAL;
-
-	if (pll->powered) {
-		pr_err("%s: cannot configure divider when PLL is powered on\n",
-			__func__);
-		return -EBUSY;
-	}
 
 	val = readl_relaxed(pll->base);
 	val &= ~pll->div_mask;
@@ -310,13 +265,6 @@ static int clk_pllv3_sys_set_rate(struct clk_hw *hw, unsigned long rate,
 		writel_relaxed(val, pll->base);
 		return 0;
 	}
-
-	if (pll->powered) {
-		pr_err("%s: cannot configure divider when PLL is powered on\n",
-			__func__);
-		return -EBUSY;
-	}
-
 	div = rate * 2 / parent_rate;
 	val = readl_relaxed(pll->base);
 	val &= ~pll->div_mask;
@@ -411,12 +359,6 @@ static int clk_pllv3_av_set_rate(struct clk_hw *hw, unsigned long rate,
 	val &= ~BM_PLL_BYPASS;
 	writel_relaxed(val, pll->base);
 
-	if (pll->powered) {
-		pr_err("%s: cannot configure divider when PLL is powered on\n",
-			__func__);
-		return -EBUSY;
-	}
-
 	div = rate / parent_rate;
 	temp64 = (u64) (rate - div * parent_rate);
 	temp64 *= mfd;
@@ -497,7 +439,7 @@ struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 
 	init.name = name;
 	init.ops = ops;
-	init.flags = CLK_GET_RATE_NOCACHE;
+	init.flags = 0;
 	init.parent_names = &parent_name;
 	init.num_parents = 1;
 

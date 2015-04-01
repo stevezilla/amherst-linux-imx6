@@ -1281,7 +1281,7 @@ init(void)
 
 	return status;
 }
-late_initcall(init);
+module_init(init);
 
 static void __exit
 cleanup(void)
