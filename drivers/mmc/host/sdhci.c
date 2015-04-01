@@ -1340,6 +1340,8 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
 
 	sdhci_runtime_pm_get(host);
 
+	present = mmc_gpio_get_cd(host->mmc);
+
 	spin_lock_irqsave(&host->lock, flags);
 
 	WARN_ON(host->mrq != NULL);
@@ -1368,7 +1370,6 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
 	 *     zero: cd-gpio is used, and card is removed
 	 *     one: cd-gpio is used, and card is present
 	 */
-	present = mmc_gpio_get_cd(host->mmc);
 	if (present < 0) {
 		/* If polling, assume that the card is always present. */
 		if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
@@ -3352,12 +3353,14 @@ void sdhci_remove_host(struct sdhci_host *host, int dead)
 	tasklet_kill(&host->finish_tasklet);
 
 	if (host->vmmc) {
-		regulator_disable(host->vmmc);
+		if (regulator_is_enabled(host->vmmc))
+			regulator_disable(host->vmmc);
 		regulator_put(host->vmmc);
 	}
 
 	if (host->vqmmc) {
-		regulator_disable(host->vqmmc);
+		if (regulator_is_enabled(host->vqmmc))
+			regulator_disable(host->vqmmc);
 		regulator_put(host->vqmmc);
 	}
 
