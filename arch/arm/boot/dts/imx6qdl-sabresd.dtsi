@@ -272,7 +272,7 @@
 &fec {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_enet_1>;
-	phy-mode = "rgmii";
+	phy-mode = "rmii";
 	status = "okay";
 };
 
