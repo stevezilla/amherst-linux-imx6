@@ -1532,12 +1532,6 @@
 				MX6QDL_PAD_GPIO_1__USB_OTG_ID 0x17059
 			>;
 		};
-
-		pinctrl_usbotg_2: usbotggrp-2 {
-			fsl,pins = <
-				MX6QDL_PAD_ENET_RX_ER__USB_OTG_ID 0x17059
-			>;
-		};
 	};
 
 	usbh2 {
