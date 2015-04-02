@@ -6,7 +6,7 @@
  * published by the Free Software Foundation.
  */
 
-#include "imx6dl-sabresd.dts"
+#include "imx6dl-amherst.dts"
 
 &cpu0 {
 	arm-supply = <&reg_arm>;
