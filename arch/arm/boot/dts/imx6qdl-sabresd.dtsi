@@ -130,7 +130,7 @@
 		disp_id = <0>;
 		default_ifmt = "RGB565";
 		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_ipu1_1>;
+		pinctrl-0 = <&pinctrl_ipu1_4>;
 		status = "okay";
 	};
 
