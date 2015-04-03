@@ -1322,7 +1322,7 @@
 			>;
 		};
 		
-		pinctrl_i2c2_3: i2c2grp-3 {
+		pinctrl_i2c2_3: i2c2grp-4 {
 			fsl,pins = <
 				MX6QDL_PAD_EIM_EB2__I2C2_SCL  0x4001b8b1
 				MX6QDL_PAD_EIM_D16__I2C2_SDA  0x4001b8b1
