@@ -178,7 +178,6 @@
 	};
 };
 
-/*
 &iomuxc {
 	epdc {
 		pinctrl_epdc_0: epdcgrp-0 {
@@ -207,4 +206,4 @@
 		};
 	};
 };
-*/
+
