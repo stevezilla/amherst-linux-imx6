@@ -54,6 +54,13 @@
 			gpio = <&gpio1 29 0>;
 			enable-active-high;
 		};
+	
+		 reg_audio: wm8962_supply {
+                        compatible = "regulator-fixed";
+                        regulator-name = "wm8962-supply";
+                        gpio = <&gpio4 10 0>;
+                        enable-active-high;
+                };
 
 		reg_mipi_dsi_pwr_on: mipi_dsi_pwr_on {
 			compatible = "regulator-fixed";
