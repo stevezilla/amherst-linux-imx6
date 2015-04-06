@@ -141,6 +141,7 @@
 				status = "disabled";
 			};
 
+			/*
 			epdc: epdc@020f4000 {
 				compatible = "fsl,imx6dl-epdc";
 				reg = <0x020f4000 0x4000>;
@@ -148,6 +149,7 @@
 				clocks = <&clks 133>, <&clks 137>;
 				clock-names = "epdc_axi", "epdc_pix";
 			};
+			*/
 
 			lcdif: lcdif@020f8000 {
 				reg = <0x020f8000 0x4000>;
@@ -178,6 +180,7 @@
 	};
 };
 
+/*
 &iomuxc {
 	epdc {
 		pinctrl_epdc_0: epdcgrp-0 {
@@ -206,4 +209,4 @@
 		};
 	};
 };
-
+*/
