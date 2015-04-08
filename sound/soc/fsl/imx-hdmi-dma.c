@@ -286,6 +286,8 @@ static void init_table(int channels)
 	}
 }
 
+#define HDMI_DMA_NO_NEON
+
 #ifdef HDMI_DMA_NO_NEON
 /* Optimization for IEC head */
 static void hdmi_dma_copy_16_c_lut(u16 *src, u32 *dst, int samples,
