@@ -304,6 +304,7 @@
 	hdmi: edid@50 {
 		compatible = "fsl,imx6-hdmi-i2c";
 		reg = <0x50>;
+		status = "disabled";
 	};
 
 	max11801@48 {
