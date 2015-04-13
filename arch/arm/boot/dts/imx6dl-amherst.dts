@@ -159,3 +159,9 @@
 		};
 	};
 };
+
+&ssi1 {
+        fsl,mode = "i2s-slave";
+        status = "okay";
+};
+
