@@ -39,15 +39,8 @@
                         "Mic Jack", "Mic Bias",
                         "Headphone Jack", "HP_OUT";
                 mux-int-port = <1>;
-                mux-ext-port = <4>;
+                mux-ext-port = <3>;
         };
-};
-
-
-&audmux {
-        status = "okay";
-        pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_audmux_4>;
 };
 
 
