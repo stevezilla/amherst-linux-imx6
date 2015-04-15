@@ -46,8 +46,8 @@
                         "MIC_IN", "Mic Jack",
                         "Mic Jack", "Mic Bias",
                         "Headphone Jack", "HP_OUT";
-                mux-int-port = <2>;
-                mux-ext-port = <3>;
+                mux-int-port = <1>;
+                mux-ext-port = <4>;
         };
 };
 
