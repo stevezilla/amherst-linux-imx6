@@ -10,7 +10,6 @@
 
 #include "imx6q.dtsi"
 #include "imx6qdl-sabresd.dtsi"
-#include "imx6dl-sabresd-common.dtsi"
 
 / {
 	model = "Freescale i.MX6 DualLite SABRE Smart Device Board(PFUZE100)";
