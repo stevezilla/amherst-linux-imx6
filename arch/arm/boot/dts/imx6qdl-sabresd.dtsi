@@ -13,9 +13,6 @@
 / {
 	aliases {
 		mxcfb0 = &mxcfb1;
-		mxcfb1 = &mxcfb2;
-		mxcfb2 = &mxcfb3;
-		mxcfb3 = &mxcfb4;
 	};
 
 	memory {
