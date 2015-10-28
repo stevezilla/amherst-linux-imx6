@@ -29,6 +29,7 @@
 */
 
 &i2c2 {
+	/*
 	pmic: pfuze100@08 {
 		compatible = "fsl,pfuze100";
 		reg = <0x08>;
@@ -127,6 +128,7 @@
 			};
 		};
 	};
+	*/
 };
 
 &mxcfb1 {
