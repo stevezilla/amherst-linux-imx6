@@ -221,7 +221,7 @@
 		reg = <0x48>;
 		interrupt-parent = <&gpio3>;
 		interrupts = <26 2>;
-		work-mode = <1>;/*DCM mode*/
+		work-mode = <1>;
 	};
 
         egalax_ts@04 {
