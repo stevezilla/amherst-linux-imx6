@@ -1923,7 +1923,7 @@ static void mxc_hdmi_cable_connected(struct mxc_hdmi *hdmi)
 		edid_status = mxc_hdmi_read_edid(hdmi);
 	}
 	*/
-	edid_status = HDMI_EDID_NOMODES;
+	edid_status = HDMI_EDID_NO_MODES;
 
 	/* HDMI Initialization Steps D, E, F */
 	switch (edid_status) {
