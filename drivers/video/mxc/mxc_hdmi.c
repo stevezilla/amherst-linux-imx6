@@ -1913,14 +1913,17 @@ static void mxc_hdmi_cable_connected(struct mxc_hdmi *hdmi)
 	hdmi->cable_plugin = true;
 
 	/* HDMI Initialization Step C */
-	edid_status = mxc_hdmi_read_edid(hdmi);
+	/*edid_status = mxc_hdmi_read_edid(hdmi);
+	*/	
 
 	/* Read EDID again if first EDID read failed */
-	if (edid_status == HDMI_EDID_NO_MODES ||
+	/*if (edid_status == HDMI_EDID_NO_MODES ||
 			edid_status == HDMI_EDID_FAIL) {
 		dev_info(&hdmi->pdev->dev, "Read EDID again\n");
 		edid_status = mxc_hdmi_read_edid(hdmi);
 	}
+	*/
+	edid_status = HDMI_EDID_NOMODES;
 
 	/* HDMI Initialization Steps D, E, F */
 	switch (edid_status) {
