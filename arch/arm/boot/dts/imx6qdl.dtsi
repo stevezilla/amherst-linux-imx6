@@ -1609,15 +1609,15 @@
 	};
 
 	uart5 {
- 		pinctrl_uart5_1: uart5grp-1 {
- 			fsl,pins = <
- 				MX6QDL_PAD_CSI0_DAT14__UART5_TX_DATA 	0x1b0b1
- 				MX6QDL_PAD_CSI0_DAT15__UART5_RX_DATA 	0x1b0b1
- 				MX6QDL_PAD_CSI0_DAT19__UART5_CTS_B 	0x1b0b1
- 				MX6QDL_PAD_CSI0_DAT18__UART5_RTS_B 	0x1b0b1
- 			>;
- 		};
- 	};
+		pinctrl_uart5_1: uart5grp-1 {
+			fsl,pins = <
+				MX6QDL_PAD_CSI0_DAT14__UART5_TX_DATA 	0x1b0b1
+				MX6QDL_PAD_CSI0_DAT15__UART5_RX_DATA 	0x1b0b1
+				MX6QDL_PAD_CSI0_DAT19__UART5_CTS_B 	0x1b0b1
+				MX6QDL_PAD_CSI0_DAT18__UART5_RTS_B 	0x1b0b1
+			>;
+		};
+	};
 
 	usbotg {
 		pinctrl_usbotg_1: usbotggrp-1 {
@@ -1754,9 +1754,8 @@
 				MX6QDL_PAD_SD3_DAT3__SD3_DATA3 0x17059
 			>;
 		};
-	};
 
-	pinctrl_wifi: wifigrp {
+		pinctrl_wifi: wifigrp {
 			fsl,pins = <
 				/* usdhc3 */
 				MX6QDL_PAD_SD3_CMD__SD3_CMD    		0x17059
@@ -1775,6 +1774,7 @@
 				/* WiFi Reset Active Low */
 				/*MX6QDL_PAD_SD3_RST__GPIO7_IO08		0x80000000*/
 			>;
+		};
 	};
 
 	usdhc4 {

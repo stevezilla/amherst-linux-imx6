@@ -191,7 +191,7 @@
 		status = "okay";
 	};
 
-	sgtl_clk: sgtl_clk {
+       sgtl_clk: sgtl_clk {
 		 compatible = "fixed-clock";
 		 #clock-cells = <0>;
 		 clock-frequency = <24000000>;
@@ -315,7 +315,6 @@
 	pinctrl-0 = <&pinctrl_audmux_5>;
 	status = "okay";
 };
-
 &uart5 {
 	status = "okay";
 	pinctrl-names = "default";
@@ -345,7 +344,6 @@
 	non-removable;
 	keep-power-in-suspend;
 };
-
 /* End of WiFi setup */
 
 &usbh1 {
@@ -406,7 +404,6 @@
 		};
 	};
 };
-
 
 /* Option PWM */
 /* Display PWM and Control */
