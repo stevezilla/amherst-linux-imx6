@@ -1775,7 +1775,6 @@
 				/* WiFi Reset Active Low */
 				/*MX6QDL_PAD_SD3_RST__GPIO7_IO08		0x80000000*/
 			>;
-		};
 	};
 
 	usdhc4 {
