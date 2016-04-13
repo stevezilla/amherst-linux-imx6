@@ -190,6 +190,13 @@
 		compatible = "fsl,mxc_v4l2_output";
 		status = "okay";
 	};
+
+	sgtl_clk: sgtl_clk {
+		 compatible = "fixed-clock";
+		 #clock-cells = <0>;
+		 clock-frequency = <24000000>;
+		 clock-output-names = "sgtl-clk";
+       };
 };
 
 &hdmi_audio {
@@ -214,11 +221,11 @@
 	status = "okay";
 };
 
-&audmux {
+/*&audmux {
 	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_audmux_2>;
-};
+};*/
 
 /* MOE: Check ecspi2 */
 &ecspi2 {
@@ -254,14 +261,14 @@
 		compatible = "fsl,sgtl5000";
 		reg = <0x0a>;
 		clocks = <&clks 201>;
-		clock-names = "csi_mclk";
+		/*clock-names = "csi_mclk";
 		mclk = <24000000>;
-		mclk_source = <0>;
-		/*VDDA-supply = <&reg_3p3v>;
-		VDDIO-supply = <&reg_3p3v>;*/
-		DOVDD-supply = <&reg_3p3v>;
+		mclk_source = <0>;*/
+		VDDA-supply = <&reg_3p3v>;
+		VDDIO-supply = <&reg_3p3v>;
+		/*DOVDD-supply = <&reg_3p3v>;
 		AVDD-supply = <&reg_3p3v>;
-		DVDD-supply = <&reg_3p3v>;
+		DVDD-supply = <&reg_3p3v>;*/
 	};
 };
 
@@ -280,6 +287,7 @@
 /* MOE: Check ssi1 */
 &ssi1 {
 	fsl,mode = "i2s-slave";
+	pinctrl-0 = <&pinctrl_audmux_2>;
 	status = "okay";
 };
 
@@ -302,7 +310,13 @@
 };
 
 /* WiFi setup */
-/*&uart5 {
+&ssi3 {
+	fsl,mode = "i2s-slave";
+	pinctrl-0 = <&pinctrl_audmux_5>;
+	status = "okay";
+};
+
+&uart5 {
 	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart5_1>;
@@ -322,26 +336,14 @@
 
 &usdhc3 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usdhc3_2>;
+	pinctrl-0 = <&pinctrl_wifi>;
 	vmmc-supply = <&reg_3p3v>;
 	no-1-8-v;
 	bus-width = <4>;
 	status = "okay";
-};
-
-&audmux {
-	status = "okay";
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_audmux_2>;
-};*/
-
-&usdhc3 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usdhc3_2>;
-	vmmc-supply = <&reg_3p3v>;
-	no-1-8-v;
-	bus-width = <4>;
-	status = "okay";
+	wifi-host;
+	non-removable;
+	keep-power-in-suspend;
 };
 
 /* End of WiFi setup */
@@ -388,25 +390,23 @@
 };*/
 
 /* MOE: Check iomuxc */
-/*&iomuxc {
+&iomuxc {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;
 
 	hog {
 		pinctrl_hog: hoggrp {
 			fsl,pins = <
-				MX6QDL_PAD_NANDF_D6__GPIO2_IO06 0x80000000
-				MX6QDL_PAD_NANDF_D7__GPIO2_IO07 0x80000000
-				MX6QDL_PAD_EIM_D19__GPIO3_IO19  0x80000000
-				MX6QDL_PAD_EIM_D22__GPIO3_IO22  0x80000000
-				MX6QDL_PAD_EIM_D23__GPIO3_IO23  0x80000000
-				MX6QDL_PAD_SD3_DAT5__GPIO7_IO00 0x80000000
-				MX6QDL_PAD_SD3_DAT4__GPIO7_IO01 0x1f0b0
-				MX6QDL_PAD_GPIO_0__CCM_CLKO1    0x80000000
+				/* SD card power enable */
+				MX6QDL_PAD_GPIO_18__GPIO7_IO13		0x80000000
+
+				/* Clock for WiFi and SGTL5000 */
+				MX6QDL_PAD_GPIO_0__CCM_CLKO1    	0x130b0
 			>;
 		};
 	};
-};*/
+};
+
 
 /* Option PWM */
 /* Display PWM and Control */
