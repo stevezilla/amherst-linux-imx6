@@ -14,8 +14,8 @@
 / {
 	aliases {
 		mxcfb0 = &mxcfb1;
-		mxcfb1 = &mxcfb2;
-		/*mxcfb2 = &mxcfb3;
+		/* mxcfb1 = &mxcfb2;
+		mxcfb2 = &mxcfb3;
 		mxcfb3 = &mxcfb4;*/
 	};
 
@@ -119,7 +119,7 @@
 		status = "disabled";
 	};
 
-	mxcfb2: fb@1 {
+	/* mxcfb2: fb@1 {
 		compatible = "fsl,mxc_sdc_fb";
 		disp_dev = "ldb";
 		interface_pix_fmt = "RGB666";
@@ -130,7 +130,7 @@
 		status = "disabled";
 	};
 
-	/*mxcfb3: fb@2 {
+	mxcfb3: fb@2 {
 		compatible = "fsl,mxc_sdc_fb";
 		disp_dev = "lcd";
 		interface_pix_fmt = "RGB565";
@@ -162,29 +162,6 @@
 		status = "okay";
 	};*/
 
-	/* MOE: Check backlight */
-	/*backlight {
-		compatible = "pwm-backlight";
-		pwms = <&pwm1 0 5000000>;
-		brightness-levels = <0 4 8 16 32 64 128 255>;
-		default-brightness-level = <7>;
-	};*/
-
-	/*v4l2_cap_0 {
-		compatible = "fsl,imx6q-v4l2-capture";
-		ipu_id = <0>;
-		csi_id = <0>;
-		mclk_source = <0>;
-		status = "okay";
-	};
-
-	v4l2_cap_1 {
-		compatible = "fsl,imx6q-v4l2-capture";
-		ipu_id = <0>;
-		csi_id = <1>;
-		mclk_source = <0>;
-		status = "okay";
-	};*/
 
 	v4l2_out {
 		compatible = "fsl,mxc_v4l2_output";
@@ -200,12 +177,6 @@
 };
 
 &hdmi_audio {
-	status = "okay";
-};
-
-&hdmi_cec {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_hdmi_cec_2>;
 	status = "okay";
 };
 
@@ -226,21 +197,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_audmux_2>;
 };*/
-
-/* MOE: Check ecspi2 */
-&ecspi2 {
-	fsl,spi-num-chipselects = <2>;
-	cs-gpios = <&gpio3 24 0>, <&gpio3 25 0>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_ecspi2_1>;
-	status = "okay";
-
-	flash: m25p80@0 {
-		compatible = "sst,sst25vf016b";
-		spi-max-frequency = <20000000>;
-		reg = <0>;
-	};
-};
 
 &fec {
 	pinctrl-names = "default";
@@ -382,10 +338,6 @@
 	status = "okay";
 };
 
-/*&pcie {
-	reset-gpio = <&gpio7 12 0>;
-	status = "okay";
-};*/
 
 /* MOE: Check iomuxc */
 &iomuxc {

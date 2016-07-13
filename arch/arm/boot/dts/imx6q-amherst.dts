@@ -20,22 +20,8 @@
 	compatible = "fsl,imx6q-amherst", "fsl,imx6q";
 };
 
-&ldb {
-	ipu_id = <0>;
-	disp_id = <1>;
-	ext_ref = <1>;
-	mode = "spl1";
-	sec_ipu_id = <0>;
-	sec_disp_id = <0>;
-	status = "okay";
-};
-
-
 &mxcfb1 {
 	status = "okay";
 };
 
 
-&mxcfb2 {
-	status = "okay";
-};
