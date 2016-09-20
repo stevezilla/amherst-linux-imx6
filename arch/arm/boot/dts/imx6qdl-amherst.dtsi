@@ -205,8 +205,8 @@
 	pinctrl-0 = <&pinctrl_ecspi2_1>;
 	status = "okay";
 
-	flash: m25p80@0 {
-		compatible = "sst,sst25vf016b";
+	spidev@0x00 {
+		compatible = "spidev";
 		spi-max-frequency = <20000000>;
 		reg = <0>;
 	};
