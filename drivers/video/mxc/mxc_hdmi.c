@@ -2447,6 +2447,8 @@ static int mxc_hdmi_disp_init(struct mxc_dispdrv_handle *disp,
 	struct mxc_hdmi *hdmi = mxc_dispdrv_getdata(disp);
 	int irq = platform_get_irq(hdmi->pdev, 0);
 
+	/* Code that was an attempt to fix HDMI */
+	/*
 	mxc_hdmi_setup(hdmi, 0);
         mxc_hdmi_enable_video_path(hdmi);
         mxc_hdmi_cable_connected(hdmi);
@@ -2454,7 +2456,8 @@ static int mxc_hdmi_disp_init(struct mxc_dispdrv_handle *disp,
         mxc_hdmi_cec_handle(0x80);
         #endif
         hdmi_set_cable_state(1);
-
+	*/
+	/* End HDMI Fix Attempt */
 
 	dev_dbg(&hdmi->pdev->dev, "%s\n", __func__);
 
