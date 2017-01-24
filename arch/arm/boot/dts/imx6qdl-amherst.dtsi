@@ -227,7 +227,7 @@
 	fsl,spi-num-chipselects = <1>;
 	cs-gpios = <&gpio3 19 0>;
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_ecspi2>;
+	pinctrl-0 = <&pinctrl_ecspi2 &pinctrl_ecspi2_cs_1>;
 	status = "okay";
 
 	spidev0:spidev@0 {

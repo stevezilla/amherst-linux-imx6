@@ -1118,6 +1118,12 @@
 	};
 
 	ecspi2 {
+		pinctrl_ecspi2_cs_1: ecspi2_cs_grp-1 {
+			fsl,pins = <
+				MX6QDL_PAD_EIM_D24__ECSPI2_SS2 0x80000000
+			>;
+		};
+
 		pinctrl_ecspi2: ecspi2grp {
 			fsl,pins = <
 				MX6QDL_PAD_EIM_OE__ECSPI2_MISO      0x100b1
