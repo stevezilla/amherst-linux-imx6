@@ -389,7 +389,8 @@
 			fsl,pins = <
 				/* SD card power enable */
 				MX6QDL_PAD_GPIO_18__GPIO7_IO13		0x80000000
-
+				MX6QDL_PAD_DISP0_DAT22__GPIO5_IO16		0x80000000
+				MX6QDL_PAD_DISP0_DAT23__GPIO5_IO17		0x80000000
 				/* Clock for WiFi and SGTL5000 */
 				MX6QDL_PAD_GPIO_0__CCM_CLKO1    	0x130b0
 			>;
